@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using System;
 using System.Globalization;
 
@@ -171,6 +172,11 @@ namespace Clock.Controls
         /// </summary>
         private double _clockRadius;
 
+        /// <summary>
+        /// Картинка с фоном часов
+        /// </summary>
+        private Bitmap _background;
+
         public ClockControl()
         {
             InitializeComponent();
@@ -180,6 +186,9 @@ namespace Clock.Controls
 
             // Подписываемся на изменение свойств контрола
             PropertyChanged += OnPropertyChangedListener;
+
+            // Загружаем картинку с фоном. Собака перед строкой значит "не пытаться интерпретировать управляющие символы"
+            _background = new Bitmap(@"Resources/clock.png");
         }
 
         /// <summary>
@@ -197,6 +206,9 @@ namespace Clock.Controls
         public override void Render(DrawingContext context)
         {
             base.Render(context); // Вызов метода отрисовки предка (рисует фон, границы и т.п.)
+
+            // Рисуем подложку
+            DrawBackground(context);
 
             // Рисуем кольцо циферблата
             context.DrawEllipse
@@ -380,7 +392,31 @@ namespace Clock.Controls
                     correctedTextCoordinates
                 );
             }
+        }
 
+        /// <summary>
+        /// Рисуем фон
+        /// </summary>
+        /// <param name="context"></param>
+        private void DrawBackground(DrawingContext context)
+        {
+            double shiftX;
+            double shiftY;
+
+            if (_width > _height)
+            {
+                shiftY = 0;
+                shiftX = (_width - _minSide) / 2.0;
+            }
+            else
+            {
+                shiftX = 0;
+                shiftY = (_height - _minSide) / 2.0;
+            }
+
+            context.DrawImage(_background,
+                new Rect(0, 0, _background.Size.Width, _background.Size.Height),
+                new Rect(shiftX, shiftY, _minSide, _minSide));
         }
     }
 }
